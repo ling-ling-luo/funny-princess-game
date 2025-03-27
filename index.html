@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火公主崩铁邀请</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            overflow-x: hidden; /* 防止横向滚动条出现 */
+            overflow-y: hidden; /* 防止纵向滚动条出现 */
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative; /* 为按钮定位做准备 */
+            overflow: hidden; /* 隐藏溢出的内容 */
+            min-height: 60vh; /* 减小高度占比 */
+            width: 85vw; /* 减小宽度占比 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-container {
+            margin-bottom: 20px;
+            transition: all 0.5s;
+            max-width: 350px; /* 减小图片容器最大宽度 */
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 8px; /* 减小圆角 */
+            transition: all 0.5s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 保留阴影 */
+        }
+        .question {
+            font-size: 28px; /* 减小问题字体 */
+            margin: 25px 0;
+            color: #e74c3c;
+            transition: all 0.5s;
+            width: 100%;
+            font-weight: bold; /* 保留粗体 */
+        }
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 60px; /* 调整按钮之间的间距 */
+            transition: all 0.5s;
+            position: relative;
+            min-height: 180px; /* 增大容器高度，为按钮随机移动提供空间 */
+            margin-top: 30px; /* 减小与上方的间距 */
+            width: 100%;
+        }
+        .option {
+            padding: 12px 30px;
+            font-size: 24px; /* 减小按钮字体 */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.5s;
+            width: 120px; /* 减小按钮宽度 */
+            height: 60px; /* 减小按钮高度 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute; /* 改为绝对定位，便于随机移动 */
+            z-index: 5;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* 减小阴影 */
+        }
+        #yes-button {
+            left: calc(50% - 150px); /* 初始位置在左侧 */
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #8BC34A; /* 浅绿色（青苹果色） */
+        }
+        #no-button {
+            left: calc(50% + 150px); /* 初始位置在右侧 */
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #e74c3c; /* 初始红色 */
+        }
+        .option:hover {
+            filter: brightness(1.1);
+        }
+        #yes-button:hover {
+            background-color: #9CCC65; /* 鼠标悬停时稍微亮一点的绿色 */
+        }
+        #no-button:hover {
+            background-color: #d73c2c; /* 鼠标悬停时稍微暗一点的红色 */
+        }
+        .result {
+            margin-top: 25px;
+            font-size: 24px; /* 减小结果文字 */
+            font-weight: bold;
+            min-height: 40px;
+            transition: all 0.5s;
+            width: 100%;
+            padding: 0 20px;
+        }
+        /* 修改全屏按钮样式，使其覆盖整个页面且可交互 */
+        .fullscreen-button {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #8BC34A; /* 与"想"按钮相同的浅绿色 */
+            color: white;
+            font-size: 100px; /* 减小全屏字体 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.8s;
+            text-shadow: 0 0 15px rgba(0,0,0,0.3); /* 减小文字阴影 */
+            cursor: pointer; /* 确保光标显示为可点击状态 */
+        }
+        /* 添加全屏遮罩层，使整个页面可点击 */
+        #fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: transparent;
+            z-index: 999;
+            display: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 添加全屏遮罩层 -->
+    <div id="fullscreen-overlay" onclick="finalYes()"></div>
+    
+    <div class="container">
+        <div class="image-container">
+            <!-- 这里需要替换为火公主的图片 -->
+            <img id="princess-image" src="princess.jpg" alt="火公主">
+        </div>
+        <div class="question">你想跟火公主一起玩《崩坏星穹铁道》吗？</div>
+        
+        <!-- 修改嘲笑表情包容器样式，避免与中间图片重叠 -->
+        <div id="meme-container" style="position: absolute; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; opacity: 0; transition: all 0.8s; pointer-events: none; box-sizing: border-box; padding: 0 15px;">
+            <img id="meme1" src="03ea3b0b033bc2b105577ee4b05bfa80.jpg" alt="嘲笑表情包1" style="max-width: 140px; max-height: 180px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); object-fit: contain; margin-top: 100px;">
+            <img id="meme2" src="77ce4a7cbf37495f6a687bcd4ea5209c.jpg" alt="嘲笑表情包2" style="max-width: 140px; max-height: 180px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); object-fit: contain; margin-top: 100px;">
+        </div>
+        
+        <div class="options">
+            <button id="yes-button" class="option" onclick="selectOption('想')">想</button>
+            <button id="no-button" class="option" onclick="selectOption('不想')">不想</button>
+        </div>
+        <div id="result" class="result"></div>
+    </div>
+    
+    <!-- 添加全屏按钮 -->
+    <div id="fullscreen-yes" class="fullscreen-button" onclick="finalYes()">想</div>
+
+    <script>
+        // 页面加载时初始化按钮位置
+        window.onload = function() {
+            resetButtonPositions();
+        };
+
+        // 定义变量跟踪点击次数
+        let noClickCount = 0;
+        // 回复文字数组，随着点击次数增加而更强烈
+        const responses = [
+            '火公主表示理解，希望下次有机会一起玩！ 🙂',
+            '火公主有点失望，但还是尊重你的选择。 😕',
+            '火公主眉头微皱，真的不考虑一下吗？ 😟',
+            '火公主看起来很沮丧，真的不再考虑下吗？ 😔',
+            '火公主忍不住流下眼泪，求你再考虑一下！ 😢',
+            '火公主跪下恳求你，真的不能一起玩吗？ 😭',
+            '火公主表示如果你再不同意，她会心碎的！ 😫',
+            '求求你了，火公主真的很想和你一起玩《崩坏星穹铁道》！ 😡'
+        ];
+
+        // 红色渐变数组，从初始红色到深红色
+        const redColors = [
+            '#e74c3c', // 初始红色
+            '#d5392d', // 更红一点
+            '#c3261e', // 更红一点
+            '#b11a15', // 更红一点
+            '#a00e0c', // 更红一点
+            '#8f0303', // 更红一点
+            '#7d0000', // 更红一点
+            '#6b0000', // 更红一点
+            '#590000', // 更红一点
+            '#470000'  // 最深红色
+        ];
+
+        // 重置按钮位置
+        function resetButtonPositions() {
+            const yesButton = document.getElementById('yes-button');
+            const noButton = document.getElementById('no-button');
+            
+            // 重置"想"按钮位置
+            yesButton.style.left = 'calc(50% - 150px)';
+            yesButton.style.top = '50%';
+            yesButton.style.transform = 'translate(-50%, -50%) scale(1)';
+            
+            // 重置"不想"按钮位置和颜色
+            noButton.style.left = 'calc(50% + 150px)';
+            noButton.style.top = '50%';
+            noButton.style.transform = 'translate(-50%, -50%)';
+            noButton.style.opacity = '1';
+            noButton.style.pointerEvents = 'auto';
+            noButton.style.backgroundColor = redColors[0]; // 恢复初始红色
+            
+            // 确保移除闪烁动画
+            noButton.style.animation = '';
+        }
+
+        // 随机移动"不想"按钮，确保不与"想"按钮重合
+        function moveNoButton() {
+            const noButton = document.getElementById('no-button');
+            const yesButton = document.getElementById('yes-button');
+            const optionsContainer = document.querySelector('.options');
+            
+            // 获取容器尺寸
+            const containerWidth = optionsContainer.offsetWidth;
+            const containerHeight = optionsContainer.offsetHeight;
+            
+            // 获取按钮尺寸
+            const noButtonWidth = noButton.offsetWidth;
+            const noButtonHeight = noButton.offsetHeight;
+            
+            // 计算"想"按钮当前位置和尺寸
+            const yesButtonRect = yesButton.getBoundingClientRect();
+            const yesButtonScale = parseFloat(yesButton.style.transform.match(/scale\(([^)]+)\)/)?.[1] || "1");
+            
+            // 计算"想"按钮的实际占用区域（考虑scale变换）
+            const yesButtonLeft = yesButtonRect.left;
+            const yesButtonTop = yesButtonRect.top;
+            const yesButtonWidth = yesButtonRect.width * yesButtonScale;
+            const yesButtonHeight = yesButtonRect.height * yesButtonScale;
+            
+            // 获取容器相对于视口的位置
+            const containerRect = optionsContainer.getBoundingClientRect();
+            
+            // 将"想"按钮的位置转换为相对于容器的位置
+            const yesButtonContainerLeft = yesButtonLeft - containerRect.left;
+            const yesButtonContainerTop = yesButtonTop - containerRect.top;
+            
+            // 计算"想"按钮的边界，提供安全距离
+            const safeDistance = 10; // 额外的安全距离
+            const yesButtonSafeLeft = yesButtonContainerLeft - noButtonWidth - safeDistance;
+            const yesButtonSafeRight = yesButtonContainerLeft + yesButtonWidth + safeDistance;
+            const yesButtonSafeTop = yesButtonContainerTop - noButtonHeight - safeDistance;
+            const yesButtonSafeBottom = yesButtonContainerTop + yesButtonHeight + safeDistance;
+            
+            // 计算最大可移动范围（留出边距）
+            const maxX = containerWidth - noButtonWidth - 20;
+            const maxY = containerHeight - noButtonHeight - 20;
+            
+            // 尝试最多10次找到不重叠的位置
+            let attempts = 0;
+            let randomX, randomY;
+            let validPosition = false;
+            
+            while (!validPosition && attempts < 10) {
+                // 生成随机位置，但确保在容器内
+                randomX = Math.max(20, Math.floor(Math.random() * maxX));
+                randomY = Math.max(20, Math.floor(Math.random() * maxY));
+                
+                // 检查是否与"想"按钮重叠
+                if (
+                    (randomX > yesButtonSafeRight || randomX + noButtonWidth < yesButtonSafeLeft) ||
+                    (randomY > yesButtonSafeBottom || randomY + noButtonHeight < yesButtonSafeTop)
+                ) {
+                    validPosition = true;
+                }
+                
+                attempts++;
+            }
+            
+            // 如果找不到不重叠的位置，就随机选择容器的一角
+            if (!validPosition) {
+                const corners = [
+                    { x: 20, y: 20 }, // 左上角
+                    { x: maxX - 20, y: 20 }, // 右上角
+                    { x: 20, y: maxY - 20 }, // 左下角
+                    { x: maxX - 20, y: maxY - 20 } // 右下角
+                ];
+                
+                // 选择距离"想"按钮最远的角落
+                let maxDistance = 0;
+                let bestCorner = corners[0];
+                
+                for (const corner of corners) {
+                    const distance = Math.sqrt(
+                        Math.pow(corner.x - yesButtonContainerLeft, 2) + 
+                        Math.pow(corner.y - yesButtonContainerTop, 2)
+                    );
+                    
+                    if (distance > maxDistance) {
+                        maxDistance = distance;
+                        bestCorner = corner;
+                    }
+                }
+                
+                randomX = bestCorner.x;
+                randomY = bestCorner.y;
+            }
+            
+            // 转换为百分比位置
+            const percentX = (randomX / containerWidth) * 100;
+            const percentY = (randomY / containerHeight) * 100;
+            
+            // 应用随机位置
+            noButton.style.left = `${percentX}%`;
+            noButton.style.top = `${percentY}%`;
+        }
+        
+        // 修改处理函数，在达到10次点击时也激活遮罩层
+        function selectOption(choice) {
+            const resultElement = document.getElementById('result');
+            const yesButton = document.getElementById('yes-button');
+            const noButton = document.getElementById('no-button');
+            const imageContainer = document.querySelector('.image-container');
+            const questionElement = document.querySelector('.question');
+            const fullscreenYes = document.getElementById('fullscreen-yes');
+            const memeContainer = document.getElementById('meme-container');
+            const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+            
+            if (choice === '想') {
+                resultElement.textContent = '那你想去吧，反正我不想 😏';
+                resultElement.style.color = '#27ae60';
+                
+                // 重置元素位置（但不要重置不想按钮的可点击状态）
+                yesButton.style.left = 'calc(50% - 150px)';
+                yesButton.style.top = '50%';
+                yesButton.style.transform = 'translate(-50%, -50%) scale(1)';
+                
+                // 设置不想按钮的位置但保持禁用状态
+                noButton.style.left = 'calc(50% + 150px)';
+                noButton.style.top = '50%';
+                noButton.style.transform = 'translate(-50%, -50%)';
+                
+                // 显示嘲笑表情包
+                memeContainer.style.opacity = '1';
+                
+                // 禁用"不想"按钮
+                noButton.style.opacity = '0.5';
+                noButton.style.pointerEvents = 'none';
+                noButton.style.cursor = 'default';
+                
+                // 设置其他元素
+                imageContainer.style.opacity = '1';
+                questionElement.style.opacity = '1';
+                resultElement.style.fontSize = '24px';
+                fullscreenYes.style.opacity = '0';
+                fullscreenYes.style.pointerEvents = 'none';
+                
+                noClickCount = 0;
+            } else {
+                // 每次点击"不想"，计数器加1
+                noClickCount++;
+                
+                // 选择相应的回复，如果超出数组范围则使用最后一个
+                const responseIndex = Math.min(noClickCount - 1, responses.length - 1);
+                resultElement.textContent = responses[responseIndex];
+                resultElement.style.color = '#e74c3c'; // 改为红色表示急迫
+                
+                // 让"想"按钮变大
+                const scale = 1 + (noClickCount * 0.4);
+                yesButton.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                yesButton.style.zIndex = '10'; // 确保在上层
+                
+                // 随机移动"不想"按钮
+                moveNoButton();
+                
+                // 更改"不想"按钮颜色，随着点击越来越红
+                const colorIndex = Math.min(noClickCount - 1, redColors.length - 1);
+                noButton.style.backgroundColor = redColors[colorIndex];
+                
+                // 增加文字大小
+                resultElement.style.fontSize = `${20 + noClickCount * 2}px`;
+                
+                // 如果点击次数达到5次，开始淡出其他元素
+                if (noClickCount >= 5) {
+                    const opacity = Math.max(0, 1 - (noClickCount - 4) * 0.25);
+                    imageContainer.style.opacity = opacity.toString();
+                    questionElement.style.opacity = opacity.toString();
+                    
+                    // 如果点击次数达到7次，逐渐显示全屏的"想"按钮
+                    if (noClickCount >= 7) {
+                        const fullscreenOpacity = Math.min(1, (noClickCount - 6) * 0.5);
+                        fullscreenYes.style.opacity = fullscreenOpacity.toString();
+                        
+                        // 到达9次点击，"不想"按钮开始闪烁，更难点击
+                        if (noClickCount >= 9) {
+                            // 添加动画，使按钮闪烁
+                            noButton.style.animation = 'flicker 0.5s infinite alternate';
+                            // 添加闪烁动画
+                            if (!document.querySelector('#flickerAnimation')) {
+                                const style = document.createElement('style');
+                                style.id = 'flickerAnimation';
+                                style.textContent = `
+                                    @keyframes flicker {
+                                        0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                                        100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
+                                    }
+                                `;
+                                document.head.appendChild(style);
+                            }
+                            
+                            // 到达10次点击，完全显示全屏按钮
+                            if (noClickCount >= 10) {
+                                fullscreenYes.style.opacity = '1';
+                                fullscreenYes.style.pointerEvents = 'auto'; // 确保启用点击事件
+                                
+                                // 激活全屏遮罩层
+                                fullscreenOverlay.style.display = 'block';
+                                
+                                // 隐藏其他所有元素
+                                noButton.style.opacity = '0';
+                                noButton.style.pointerEvents = 'none';
+                                yesButton.style.opacity = '0';
+                                yesButton.style.pointerEvents = 'none';
+                                resultElement.style.opacity = '0';
+                                
+                                // 确保嘲笑表情包此时是隐藏的
+                                memeContainer.style.opacity = '0';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 修改finalYes函数，在结束时关闭遮罩层
+        function finalYes() {
+            const resultElement = document.getElementById('result');
+            const yesButton = document.getElementById('yes-button');
+            const noButton = document.getElementById('no-button');
+            const imageContainer = document.querySelector('.image-container');
+            const questionElement = document.querySelector('.question');
+            const fullscreenYes = document.getElementById('fullscreen-yes');
+            const container = document.querySelector('.container');
+            const memeContainer = document.getElementById('meme-container');
+            const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+            
+            // 先让全屏按钮闪烁一下，然后再重置
+            fullscreenYes.style.backgroundColor = '#4CAF50'; // 稍深的绿色
+            
+            // 延迟一小段时间后重置所有内容
+            setTimeout(function() {
+                // 恢复按钮颜色
+                fullscreenYes.style.backgroundColor = '#8BC34A';
+                
+                // 隐藏全屏按钮和遮罩层
+                fullscreenYes.style.opacity = '0';
+                fullscreenYes.style.pointerEvents = 'none';
+                fullscreenOverlay.style.display = 'none';
+                
+                // 显示容器内容
+                container.style.opacity = '1';
+                
+                // 显示结果文字
+                resultElement.textContent = '那你想去吧，反正我不想 😏';
+                resultElement.style.color = '#27ae60';
+                resultElement.style.opacity = '1';
+                resultElement.style.fontSize = '24px';
+                
+                // 显示嘲笑表情包
+                memeContainer.style.opacity = '1';
+                
+                // 设置"想"按钮位置
+                yesButton.style.left = 'calc(50% - 150px)';
+                yesButton.style.top = '50%';
+                yesButton.style.transform = 'translate(-50%, -50%) scale(1)';
+                yesButton.style.opacity = '1';
+                yesButton.style.pointerEvents = 'auto';
+                
+                // 设置"不想"按钮位置但保持禁用状态
+                noButton.style.left = 'calc(50% + 150px)';
+                noButton.style.top = '50%';
+                noButton.style.transform = 'translate(-50%, -50%)';
+                
+                // 禁用"不想"按钮
+                noButton.style.opacity = '0.5';
+                noButton.style.pointerEvents = 'none';
+                noButton.style.cursor = 'default';
+                noButton.style.animation = '';
+                
+                // 设置其他元素
+                imageContainer.style.opacity = '1';
+                questionElement.style.opacity = '1';
+                
+                noClickCount = 0;
+            }, 300);
+        }
+    </script>
+</body>
+</html> 
